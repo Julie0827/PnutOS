@@ -7,6 +7,7 @@ TabWidth: 2
 UseTab: Never
 
 ColumnLimit: 100
+AlignEscapedNewlines: Left
 
 PointerAlignment: Right
 DerivePointerAlignment: false
