@@ -1,0 +1,17 @@
+{
+  "files.trimTrailingWhitespace": true,
+  "files.insertFinalNewline": true,
+  "files.trimFinalNewlines": true,
+
+  "editor.formatOnSave": true,
+
+  "json.format.keepLines": true,
+
+  "[jsonc]": {
+    "editor.defaultFormatter": "vscode.json-language-features",
+  },
+
+  "[c]": {
+    "editor.defaultFormatter": "ms-vscode.cpptools",
+  }
+}
