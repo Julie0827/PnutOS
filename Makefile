@@ -1,3 +1,5 @@
+INCLUDE_DIRS := libc
+
 CC := riscv64-unknown-elf-gcc
 CFLAGS := \
 	-std=c23 \
@@ -7,7 +9,8 @@ CFLAGS := \
 	-mabi=lp64d \
 	-mcmodel=medany \
 	-ffreestanding \
-	-fno-stack-protector
+	-fno-stack-protector \
+	$(foreach dir,$(INCLUDE_DIRS),-I$(dir))
 
 LDSCRIPT := linker.ld
 LDFLAGS := -nostdlib -T $(LDSCRIPT)
@@ -18,21 +21,23 @@ QEMUFLAGS := -machine virt -bios none -smp 1 -nographic
 BUILD := build
 KERNEL := $(BUILD)/pnutos.elf
 
-SRCS_S := $(wildcard kernel/*.S)
-SRCS_C := $(wildcard kernel/*.c)
-OBJS := $(SRCS_S:kernel/%.S=$(BUILD)/%.o) $(SRCS_C:kernel/%.c=$(BUILD)/%.o)
+SRC_DIRS := kernel libc
+
+SRCS_S := $(foreach dir,$(SRC_DIRS),$(wildcard $(dir)/*.S))
+SRCS_C := $(foreach dir,$(SRC_DIRS),$(wildcard $(dir)/*.c))
+
+OBJS := $(SRCS_S:%.S=$(BUILD)/%.o) $(SRCS_C:%.c=$(BUILD)/%.o)
 
 .PHONY: all run clean
 
 all: $(KERNEL)
 
-$(BUILD):
-	mkdir -p $(BUILD)
-
-$(BUILD)/%.o: kernel/%.S | $(BUILD)
+$(BUILD)/%.o: %.S
+	mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) -c $< -o $@
 
-$(BUILD)/%.o: kernel/%.c | $(BUILD)
+$(BUILD)/%.o: %.c
+	mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) -c $< -o $@
 
 $(KERNEL): $(OBJS) $(LDSCRIPT)

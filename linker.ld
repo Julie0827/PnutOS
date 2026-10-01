@@ -4,6 +4,8 @@ ENTRY(_start)
 SECTIONS {
     . = 0x80000000;
 
+    kernel_start = .;
+
     .text : {
         *(.text .text.*)
     }
@@ -20,6 +22,8 @@ SECTIONS {
         *(.bss .bss.*)
         *(COMMON)
     }
+
+    kernel_end = .;
 
     .stack ALIGN(16) : {
         stack_bottom = .;
