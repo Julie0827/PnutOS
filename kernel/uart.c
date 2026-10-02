@@ -3,6 +3,7 @@
 #define UART_BASE 0x10000000UL
 
 #define UART_THR 0
+#define UART_RBR 0
 #define UART_DLL 0
 
 #define UART_IER 1
@@ -16,6 +17,7 @@
 #define UART_LCR_8N1 0x03
 
 #define UART_LSR_THRE (1U << 5)
+#define UART_LSR_DR 0x01
 
 #define UART_REG(offset) (*(volatile unsigned char *)(UART_BASE + (offset)))
 
@@ -41,4 +43,11 @@ void uart_puts(const char *s) {
   while (*s) {
     uart_putchar(*s++);
   }
+}
+
+char uart_getchar() {
+  while ((UART_REG(UART_LSR) & UART_LSR_DR) == 0) {
+  }
+
+  return UART_REG(UART_RBR);
 }

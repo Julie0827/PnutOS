@@ -1,4 +1,5 @@
 #include "panic.h"
+#include "cpu.h"
 #include "kprintf.h"
 
 [[noreturn]] void panic(const char *fmt, ...) {
@@ -11,6 +12,5 @@
 
   va_end(args);
 
-  while (1) {
-  }
+  cpu_halt();
 }

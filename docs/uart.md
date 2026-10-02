@@ -15,6 +15,7 @@ PnutOS runs on QEMU's RISC-V `virt` machine, which provides a 16550A-compatible 
 | Offset | Register | Name | Purpose |
 |---|---|---|---|
 | `0` | THR | Transmitter Holding Register | Transmit a byte |
+| `0` | RBR | Receiver Buffer Register | Receive a byte |
 | `0` | DLL | Divisor Latch Low | Set low byte of baud divisor when DLAB = 1 |
 | `1` | IER | Interrupt Enable Register | Control UART interrupts |
 | `1` | DLM | Divisor Latch High | Set high byte of baud divisor when DLAB = 1 |
@@ -28,8 +29,10 @@ PnutOS runs on QEMU's RISC-V `virt` machine, which provides a 16550A-compatible 
 void uart_init();
 void uart_putchar(char c);
 void uart_puts(const char *s);
+char uart_getchar();
 ```
 
 - `uart_init()` - initializes the UART
 - `uart_putchar()` - writes a character
 - `uart_puts()` - writes a null-terminated string
+- `uart_getchar()` - reads a character
