@@ -1,4 +1,5 @@
 #include "command.h"
+#include "ansi.h"
 #include "cpu.h"
 #include "kprintf.h"
 #include "memory.h"
@@ -81,7 +82,7 @@ static void cmd_clear(size_t argc, char **argv) {
   (void)argc;
   (void)argv;
 
-  uart_puts("\x1b[2J\x1b[H\r\n\r\n");
+  uart_puts(ANSI_CLEAR_SCREEN ANSI_CURSOR_HOME "\r\n\r\n");
 }
 
 static void cmd_echo(size_t argc, char **argv) {

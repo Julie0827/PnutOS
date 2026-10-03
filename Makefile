@@ -1,4 +1,4 @@
-INCLUDE_DIRS := libc
+INCLUDE_DIRS := libc common
 
 CC := riscv64-unknown-elf-gcc
 CFLAGS := \

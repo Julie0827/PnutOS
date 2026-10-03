@@ -1,4 +1,5 @@
 #include "monitor.h"
+#include "ansi.h"
 #include "command.h"
 #include "parser.h"
 #include "uart.h"
@@ -15,7 +16,7 @@
 #define ASCII_PRINTABLE_MIN 0x20
 #define ASCII_PRINTABLE_MAX 0x7E
 
-static const char prompt[] = "pnut> ";
+static const char prompt[] = ANSI_CYAN "pnut> " ANSI_RESET;
 
 static void handle_command(char *line) {
   char *argv[ARGV_MAX];
