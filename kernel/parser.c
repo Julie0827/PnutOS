@@ -13,8 +13,13 @@ size_t parse_line(char *line, char **argv) {
   while (*ptr) {
     bool whitespace = is_whitespace(*ptr);
 
-    if (!whitespace && prev_was_whitespace && argc < ARGV_MAX) argv[argc++] = ptr;
-    else if (whitespace) *ptr = '\0';
+    if (!whitespace && prev_was_whitespace) {
+      if (argc == ARGV_MAX) return ARGV_MAX + 1;
+
+      argv[argc++] = ptr;
+    } else if (whitespace) {
+      *ptr = '\0';
+    }
 
     prev_was_whitespace = whitespace;
     ptr++;

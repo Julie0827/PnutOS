@@ -23,6 +23,11 @@ static void handle_command(char *line) {
 
   if (!argc) return;
 
+  if (argc > ARGV_MAX) {
+    uart_puts("Too many arguments\r\n");
+    return;
+  }
+
   dispatch_command(argc, argv);
 }
 
