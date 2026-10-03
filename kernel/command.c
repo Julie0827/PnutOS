@@ -33,7 +33,7 @@ static void cmd_help(size_t argc, char **argv) {
   uart_puts("Available commands:\r\n");
 
   for (size_t i = 0; i < command_count; i++) {
-    kprintf("%s - %s\r\n", commands[i].name, commands[i].description);
+    kprintf("%-10s%s\r\n", commands[i].name, commands[i].description);
   }
 }
 

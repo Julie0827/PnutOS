@@ -33,6 +33,26 @@ void vkprintf(const char *fmt, va_list args);
 | `%p` | Pointer |
 | `%%` | Literal `%` |
 
+## Field Width and Alignment
+
+`kprintf()` supports minimum field widths and left or right alignment.
+
+| Syntax | Description |
+|---|---|
+| `%<width><specifier>` | Set minimum width and right-align |
+| `%-<width><specifier>` | Set minimum width and left-align |
+| `%*<specifier>` | Get minimum width from an argument (pos: right-align, neg: left-align)|
+| `%-*<specifier>` | Get minimum width from an argument and left-align |
+
+### Examples
+
+```c
+kprintf("%10s", "hello");    // "     hello"
+kprintf("%-10d", 123);       // "123       "
+kprintf("%*x", 10, 0xabc);   // "       abc"
+kprintf("%-*c", 10, 'A');    // "A         "
+```
+
 ## Design
 
 `kprintf()` initializes a `va_list` and delegates formatting to `vkprintf()`.
