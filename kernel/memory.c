@@ -19,9 +19,13 @@ void memory_init(uint64_t base, uint64_t size) {
   memory.size = size;
 }
 
+uint64_t memory_get_end() {
+  return memory.base + memory.size;
+}
+
 void memory_print_info(const char *prefix) {
   kprintf("%skernel: %p - %p\n", prefix, kernel_start, kernel_end);
   kprintf("%sstack: %p - %p\n", prefix, stack_bottom, stack_top);
   kprintf("%sram: %p - %p (%lu MiB)\n", prefix, (void *)(uintptr_t)memory.base,
-          (void *)(uintptr_t)(memory.base + memory.size), memory.size / (1024 * 1024));
+          (void *)(uintptr_t)memory_get_end(), memory.size / (1024 * 1024));
 }

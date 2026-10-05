@@ -21,7 +21,7 @@ QEMUFLAGS := -machine virt -bios none -smp 1 -nographic
 BUILD := build
 KERNEL := $(BUILD)/pnutos.elf
 
-SRC_DIRS := kernel libc
+SRC_DIRS := kernel libc common
 
 SRCS_S := $(foreach dir,$(SRC_DIRS),$(wildcard $(dir)/*.S))
 SRCS_C := $(foreach dir,$(SRC_DIRS),$(wildcard $(dir)/*.c))
