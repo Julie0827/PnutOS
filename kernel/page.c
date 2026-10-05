@@ -35,7 +35,6 @@ static size_t page_bitmap_page_count(size_t total_page_count) {
 }
 
 static size_t page_index(void *ptr) {
-
   return ((uintptr_t)ptr - first_page_addr) / PAGE_SIZE;
 }
 
