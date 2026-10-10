@@ -20,6 +20,7 @@ QEMUFLAGS := -machine virt -bios none -smp 1 -nographic
 
 BUILD := build
 KERNEL := $(BUILD)/pnutos.elf
+TEST_KERNEL := $(BUILD)/pnutos-test.elf
 
 SRC_DIRS := kernel libc common
 
@@ -28,7 +29,10 @@ SRCS_C := $(foreach dir,$(SRC_DIRS),$(wildcard $(dir)/*.c))
 
 OBJS := $(SRCS_S:%.S=$(BUILD)/%.o) $(SRCS_C:%.c=$(BUILD)/%.o)
 
-.PHONY: all run clean
+TEST_SRCS := $(wildcard test/*.c) $(foreach dir,$(SRC_DIRS),$(wildcard test/$(dir)/*.c))
+TEST_OBJS := $(filter-out $(BUILD)/kernel/main.o,$(OBJS)) $(TEST_SRCS:%.c=$(BUILD)/%.o)
+
+.PHONY: all run test clean
 
 all: $(KERNEL)
 
@@ -40,11 +44,19 @@ $(BUILD)/%.o: %.c
 	mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) -c $< -o $@
 
+$(BUILD)/test/%.o: CFLAGS += -Itest -Ikernel -I.
+
 $(KERNEL): $(OBJS) $(LDSCRIPT)
 	$(CC) $(LDFLAGS) $(OBJS) -o $@
 
+$(TEST_KERNEL): $(TEST_OBJS) $(LDSCRIPT)
+	$(CC) $(LDFLAGS) $(TEST_OBJS) -o $@
+
 run: $(KERNEL)
 	$(QEMU) $(QEMUFLAGS) -kernel $(KERNEL)
+
+test: $(TEST_KERNEL)
+	$(QEMU) $(QEMUFLAGS) -kernel $(TEST_KERNEL)
 
 clean:
 	rm -rf $(BUILD)

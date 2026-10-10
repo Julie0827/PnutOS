@@ -61,6 +61,12 @@ QEMU is set to run directly in the terminal instead of opening a separate window
 > [!NOTE]
 > To exit QEMU, press <kbd>Ctrl</kbd> + <kbd>A</kbd>, release the keys, then press <kbd>X</kbd>.
 
+To build PnutOS and run the test suite in QEMU, run:
+
+```bash
+make test
+```
+
 To remove all generated build files, run:
 
 ```bash
