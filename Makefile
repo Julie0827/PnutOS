@@ -16,7 +16,15 @@ LDSCRIPT := linker.ld
 LDFLAGS := -nostdlib -T $(LDSCRIPT)
 
 QEMU := qemu-system-riscv64
-QEMUFLAGS := -machine virt -bios none -smp 1 -nographic
+QEMUFLAGS := -machine virt \
+	-cpu rv64,sstc=true \
+	-bios none \
+	-smp 1 \
+	-nographic
+
+ifeq ($(DEBUG),1)
+QEMUFLAGS += -S -gdb tcp::1234
+endif
 
 BUILD := build
 KERNEL := $(BUILD)/pnutos.elf
