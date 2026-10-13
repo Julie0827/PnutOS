@@ -1,4 +1,5 @@
 #include "panic.h"
+#include "ansi.h"
 #include "cpu.h"
 #include "kprintf.h"
 
@@ -6,9 +7,9 @@
   va_list args;
   va_start(args, fmt);
 
-  kprintf("PANIC: ");
+  kprintf(ANSI_RED "PANIC: ");
   vkprintf(fmt, args);
-  kprintf("\r\n");
+  kprintf(ANSI_RESET "\r\n");
 
   va_end(args);
 
