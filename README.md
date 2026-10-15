@@ -1,5 +1,12 @@
 # 🥜 PnutOS
 
+## Tech Stack
+
+- C23
+- RISC-V (RV64GC) assembly
+- QEMU (`virt` machine)
+- RISC-V GNU toolchain (`riscv64-unknown-elf-gcc`)
+
 ## Setup
 
 I'm using macOS, so these setup instructions are written for macOS.
@@ -38,7 +45,8 @@ You should see:
 riscv64-unknown-elf
 ```
 
-PnutOS is written in C23, so the cross compiler must support C23.
+> [!NOTE]
+> PnutOS is written in C23, so the cross compiler must support C23.
 
 ## Build and Run
 
