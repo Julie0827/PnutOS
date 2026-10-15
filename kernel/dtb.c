@@ -12,11 +12,17 @@
 #define FDT_NOP 0x00000004
 #define FDT_END 0x00000009
 
-struct dtb_state {
+#define DTB_MAX_TRACKED_DEPTH 16
+
+struct dtb_node {
+  const char *name;
   uint32_t address_cells;
   uint32_t size_cells;
-  bool is_memory;
-  bool memory_found;
+};
+
+struct dtb_state {
+  size_t depth;
+  struct dtb_node nodes[DTB_MAX_TRACKED_DEPTH];
 };
 
 static uint32_t read_be32(const void *ptr) {
@@ -50,6 +56,10 @@ static const void *dtb_get_strings(const void *dtb) {
   return (const uint8_t *)dtb + dtb_get_strings_offset(dtb);
 }
 
+static uint32_t dtb_get_struct_size(const void *dtb) {
+  return dtb_get_header_field(dtb, 9);
+}
+
 static uint32_t read_token(const uint8_t **ptr) {
   uint32_t token = read_be32(*ptr);
 
@@ -64,6 +74,19 @@ static const uint8_t *align4(const uint8_t *ptr) {
   return (const uint8_t *)((addr + 3) & ~(uintptr_t)3);
 }
 
+static const uint8_t *handle_begin_node(const uint8_t *ptr, struct dtb_state *state) {
+  const char *name = (const char *)ptr;
+
+  if (*name) state->depth++;
+
+  if (state->depth < DTB_MAX_TRACKED_DEPTH) state->nodes[state->depth].name = name;
+
+  while (*ptr++) {
+  }
+
+  return align4(ptr);
+}
+
 static bool is_memory_node(const char *name) {
   const char *expected = "memory";
 
@@ -72,17 +95,6 @@ static bool is_memory_node(const char *name) {
   }
 
   return !*name || *name == '@';
-}
-
-static const uint8_t *handle_begin_node(const uint8_t *ptr, struct dtb_state *state) {
-  const char *name = (const char *)ptr;
-
-  state->is_memory = is_memory_node(name);
-
-  while (*ptr++) {
-  }
-
-  return align4(ptr);
 }
 
 static uint64_t read_cells(const uint8_t *ptr, uint32_t cells) {
@@ -99,64 +111,69 @@ static uint64_t read_cells(const uint8_t *ptr, uint32_t cells) {
 }
 
 static const uint8_t *handle_prop(const uint8_t *ptr, const uint8_t *strings,
-                                  struct dtb_state *state, struct dtb_memory *memory) {
+                                  struct dtb_state *state, struct dtb_info *info) {
   uint32_t len = read_be32(ptr);
   ptr += 4;
 
   uint32_t nameoff = read_be32(ptr);
   ptr += 4;
 
+  const uint8_t *next = align4(ptr + len);
+  const size_t depth = state->depth;
+
+  if (depth >= DTB_MAX_TRACKED_DEPTH) return next;
+
   const char *name = (const char *)(strings + nameoff);
+  struct dtb_node *node = &state->nodes[depth];
 
-  if (!state->address_cells && !strcmp(name, "#address-cells"))
-    state->address_cells = read_be32(ptr);
-  else if (!state->size_cells && !strcmp(name, "#size-cells")) state->size_cells = read_be32(ptr);
+  if (!strcmp(name, "#address-cells")) node->address_cells = read_be32(ptr);
+  else if (!strcmp(name, "#size-cells")) node->size_cells = read_be32(ptr);
+  else if (depth > 0 && is_memory_node(node->name) && !strcmp(name, "reg")) {
+    const struct dtb_node *parent = &state->nodes[depth - 1];
 
-  if (state->is_memory && strcmp(name, "reg") == 0) {
-    memory->base = read_cells(ptr, state->address_cells);
-    memory->size = read_cells(ptr + state->address_cells * 4, state->size_cells);
-
-    state->memory_found = true;
+    info->memory.base = read_cells(ptr, parent->address_cells);
+    info->memory.size = read_cells(ptr + parent->address_cells * 4, parent->size_cells);
+  } else if (!strcmp(node->name, "cpus") && !strcmp(name, "timebase-frequency")) {
+    info->timebase_frequency = read_be32(ptr);
   }
 
-  ptr += len;
-
-  return align4(ptr);
+  return next;
 }
 
-struct dtb_memory dtb_get_memory(const void *dtb) {
+struct dtb_info dtb_parse(const void *dtb) {
   if (!dtb_is_valid(dtb)) panic("Invalid DTB");
 
   const uint8_t *ptr = dtb_get_struct(dtb);
+  const uint8_t *end = ptr + dtb_get_struct_size(dtb);
   const uint8_t *strings = dtb_get_strings(dtb);
 
   struct dtb_state state = {0};
-  struct dtb_memory memory = {0};
+  struct dtb_info info = {0};
 
-  while (!state.memory_found) {
+  while (end - ptr >= 4) {
     switch (read_token(&ptr)) {
       case FDT_BEGIN_NODE:
         ptr = handle_begin_node(ptr, &state);
         break;
 
       case FDT_END_NODE:
-        state.is_memory = false;
+        if (state.depth > 0) state.depth--;
         break;
 
       case FDT_PROP:
-        ptr = handle_prop(ptr, strings, &state, &memory);
+        ptr = handle_prop(ptr, strings, &state, &info);
         break;
 
       case FDT_NOP:
         break;
 
       case FDT_END:
-        panic("Memory not found in DTB");
+        return info;
 
       default:
         panic("Unknown DTB token");
     }
   }
 
-  return memory;
+  panic("Missing FDT_END");
 }

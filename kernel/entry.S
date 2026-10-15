@@ -9,6 +9,7 @@ _start:
     call setup_pmp
     call setup_address_translation
     call setup_traps
+    call setup_timer_access
 
     la t0, supervisor_entry
     csrw mepc, t0
@@ -51,6 +52,23 @@ setup_traps:
 
     li t0, 0x222
     csrw mideleg, t0
+
+    ret
+
+setup_timer_access:
+    csrr t0, mcounteren
+
+    li t1, (1 << 1)
+    or t0, t0, t1
+
+    csrw mcounteren, t0
+
+    csrr t0, menvcfg
+
+    li t1, (1 << 63)
+    or t0, t0, t1
+
+    csrw menvcfg, t0
 
     ret
 

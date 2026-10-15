@@ -3,6 +3,13 @@
 #include "banner.h"
 #include "kprintf.h"
 #include "panic.h"
+#include "timer.h"
+
+enum interrupt_code {
+  INTERRUPT_SUPERVISOR_SOFTWARE = 1,
+  INTERRUPT_SUPERVISOR_TIMER = 5,
+  INTERRUPT_SUPERVISOR_EXTERNAL = 9,
+};
 
 enum exception_code {
   EXCEPTION_INST_ADDR_MISALIGNED = 0,
@@ -45,7 +52,16 @@ static void print_trap_frame(const struct trap_frame *frame) {
 #undef CSR_LIST
 #undef PRINT_REG
 
-static void handle_interrupt(struct trap_frame *frame, uint64_t code) {}
+static void handle_interrupt(uint64_t code) {
+  switch (code) {
+    case INTERRUPT_SUPERVISOR_TIMER:
+      timer_handle_interrupt();
+      break;
+
+    default:
+      panic("Unknown interrupt");
+  }
+}
 
 static void handle_exception(struct trap_frame *frame, uint64_t code) {
   const char *description;
@@ -113,8 +129,11 @@ void trap_handler(struct trap_frame *frame) {
   bool is_interrupt = scause >> 63;
   uint64_t code = scause & (UINT64_MAX >> 1);
 
-  if (is_interrupt) handle_interrupt(frame, code);
-  else handle_exception(frame, code);
+  if (is_interrupt) {
+    handle_interrupt(code);
+    return;
+  }
 
+  handle_exception(frame, code);
   panic("Unhandled trap (scause=0x%lx)", scause);
 }

@@ -1,9 +1,11 @@
 #include "banner.h"
 #include "dtb.h"
+#include "interrupt.h"
 #include "memory.h"
 #include "page.h"
 #include "test.h"
 #include "test/config.h"
+#include "timer.h"
 #include "uart.h"
 
 #include <stdint.h>
@@ -23,11 +25,12 @@ void kernel_main(unsigned long hart_id, const void *dtb) {
 
   uart_init();
 
-  struct dtb_memory memory = dtb_get_memory(dtb);
+  struct dtb_info dtb_info = dtb_parse(dtb);
 
-  memory_init(memory.base, memory.size);
-
+  memory_init(dtb_info.memory.base, dtb_info.memory.size);
   page_init();
+
+  timer_init(dtb_info.timebase_frequency);
 
   banner_title("PnutOS Test Suite");
 
@@ -70,6 +73,13 @@ void kernel_main(unsigned long hart_id, const void *dtb) {
 #if TEST_ALL || TEST_HEAP
   test_heap();
   test_pass("heap");
+#endif
+
+#if TEST_ALL || TEST_TIMER
+  interrupt_enable();
+  test_timer();
+  interrupt_disable();
+  test_pass("timer");
 #endif
 
   banner_summary("All tests passed!");

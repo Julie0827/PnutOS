@@ -21,3 +21,4 @@ void test_kprintf();
 void test_parser();
 void test_page();
 void test_heap();
+void test_timer();

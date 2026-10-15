@@ -15,3 +15,4 @@
 #define TEST_PARSER 0
 #define TEST_PAGE 0
 #define TEST_HEAP 0
+#define TEST_TIMER 0
